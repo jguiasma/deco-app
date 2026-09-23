@@ -1,0 +1,16 @@
+# Fichiers locaux et secrets
+**/.env
+**/.env.*
+!**/.env.example
+
+# Dépendances et fichiers générés
+**/node_modules/
+**/vendor/
+**/dist/
+**/public/build/
+
+# Outils et système
+.idea/
+.vscode/
+Thumbs.db
+.DS_Store
