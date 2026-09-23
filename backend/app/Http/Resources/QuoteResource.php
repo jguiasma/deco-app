@@ -29,6 +29,11 @@ class QuoteResource extends JsonResource
             'valid_until' => $this->valid_until?->toDateString(),
             'conditions' => $this->conditions,
             'notes' => $this->notes,
+            'quote_request' => $this->whenLoaded('quoteRequest', fn () => $this->quoteRequest ? [
+                'id' => $this->quoteRequest->id,
+                'first_name' => $this->quoteRequest->first_name,
+                'last_name' => $this->quoteRequest->last_name,
+            ] : null),
             'items' => $this->whenLoaded('items', fn () => $this->items->map(fn ($item) => [
                 'id' => $item->id,
                 'label' => $item->label,

@@ -21,8 +21,19 @@ class AdminQuoteController extends Controller
         $this->ensureAdmin($request);
 
         $quotes = Quote::query()
-            ->with('items')
+            ->with(['items', 'quoteRequest'])
             ->when($request->filled('status'), fn ($query) => $query->where('status', $request->input('status')))
+            ->when($request->filled('search'), function ($query) use ($request) {
+                $search = trim((string) $request->input('search'));
+
+                $query->where(function ($query) use ($search) {
+                    $query->where('quote_number', 'like', "%{$search}%")
+                        ->orWhereHas('quoteRequest', function ($query) use ($search) {
+                            $query->where('first_name', 'like', "%{$search}%")
+                                ->orWhere('last_name', 'like', "%{$search}%");
+                        });
+                });
+            })
             ->latest()
             ->paginate(20);
 
@@ -91,7 +102,7 @@ class AdminQuoteController extends Controller
             return $quote;
         });
 
-        return QuoteResource::make($quote->load('items'))
+        return QuoteResource::make($quote->load(['items', 'quoteRequest']))
             ->response()
             ->setStatusCode(201);
     }
@@ -100,7 +111,7 @@ class AdminQuoteController extends Controller
     {
         $this->ensureAdmin($request);
 
-        return QuoteResource::make($quote->load('items'));
+        return QuoteResource::make($quote->load(['items', 'quoteRequest']));
     }
 
     public function pdf(Request $request, Quote $quote)
@@ -132,7 +143,7 @@ class AdminQuoteController extends Controller
             }
         }
 
-        return QuoteResource::make($quote->load('items'));
+        return QuoteResource::make($quote->load(['items', 'quoteRequest']));
     }
 
     private function ensureAdmin(Request $request): void
