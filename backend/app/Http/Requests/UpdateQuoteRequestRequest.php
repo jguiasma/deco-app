@@ -16,7 +16,7 @@ class UpdateQuoteRequestRequest extends FormRequest
         return [
             'status' => [
                 'sometimes',
-                'in:new,contacted,quoted,accepted,rejected',
+                'in:new,contacted',
             ],
             'admin_notes' => ['nullable', 'string', 'max:3000'],
         ];
