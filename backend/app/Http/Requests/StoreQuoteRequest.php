@@ -14,7 +14,7 @@ class StoreQuoteRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'quote_request_id' => ['nullable', 'integer', 'exists:quote_requests,id'],
+            'quote_request_id' => ['required', 'integer', 'exists:quote_requests,id'],
             'items' => ['required', 'array', 'min:1'],
             'items.*.label' => ['required', 'string', 'max:255'],
             'items.*.description' => ['nullable', 'string', 'max:2000'],

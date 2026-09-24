@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreQuoteRequest;
 use App\Http\Requests\UpdateQuoteRequest;
 use App\Http\Resources\QuoteResource;
+use App\Models\QuoteRequest;
 use App\Models\Quote;
 use App\Notifications\QuoteSentToClient;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -44,6 +45,17 @@ class AdminQuoteController extends Controller
     {
         $this->ensureAdmin($request);
         $data = $request->validated();
+
+        $hasCompletedAppointment = QuoteRequest::query()
+            ->whereKey($data['quote_request_id'])
+            ->whereHas('appointments', fn ($query) => $query->where('status', 'completed'))
+            ->exists();
+
+        if (! $hasCompletedAppointment) {
+            throw ValidationException::withMessages([
+                'quote_request_id' => ['Un rendez-vous terminé est obligatoire avant de créer le devis final.'],
+            ]);
+        }
 
         $quote = DB::transaction(function () use ($data) {
             $subtotal = round(collect($data['items'])->sum(

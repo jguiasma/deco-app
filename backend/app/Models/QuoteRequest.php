@@ -60,4 +60,9 @@ public function images(): HasMany
 {
     return $this->hasMany(QuoteRequestImage::class)->orderBy('sort_order');
 }
+
+public function appointments(): HasMany
+{
+    return $this->hasMany(Appointment::class);
+}
 }
