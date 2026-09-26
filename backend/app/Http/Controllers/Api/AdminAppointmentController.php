@@ -46,6 +46,7 @@ class AdminAppointmentController extends Controller
         $this->ensureAdmin($request);
 
         $appointments = Appointment::query()
+            ->with(['quoteRequest.service'])
             ->when($request->filled('status'), fn ($query) => $query->where('status', $request->input('status')))
             ->when($request->filled('mode'), fn ($query) => $query->where('appointment_mode', $request->input('mode')))
             ->when($request->filled('platform'), fn ($query) => $query->where('remote_platform', $request->input('platform')))

@@ -30,6 +30,16 @@ class AppointmentResource extends JsonResource
             'status' => $this->status,
             'notes' => $this->notes,
             'admin_notes' => $this->admin_notes,
+            'quote_request' => $this->whenLoaded('quoteRequest', fn () => $this->quoteRequest ? [
+                'id' => $this->quoteRequest->id,
+                'service' => $this->quoteRequest->service ? [
+                    'title' => $this->quoteRequest->service->title,
+                ] : null,
+                'quantity' => $this->quoteRequest->quantity,
+                'unit' => $this->quoteRequest->unit,
+                'dimensions' => $this->quoteRequest->dimensions,
+                'description' => $this->quoteRequest->description,
+            ] : null),
             'created_at' => $this->created_at?->toISOString(),
         ];
     }
