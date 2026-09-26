@@ -14,7 +14,7 @@ class StoreAppointmentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'quote_request_id' => ['required', 'integer', 'exists:quote_requests,id'],
+            'quote_request_id' => ['nullable', 'integer', 'exists:quote_requests,id'],
             'first_name' => ['required', 'string', 'max:100'],
             'last_name' => ['required', 'string', 'max:100'],
             'phone' => ['required', 'string', 'max:30'],
