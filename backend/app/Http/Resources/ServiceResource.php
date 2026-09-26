@@ -15,6 +15,10 @@ class ServiceResource extends JsonResource
             'slug' => $this->slug,
             'description' => $this->description,
             'image_path' => $this->image_path,
+            'pricing_rule' => $this->whenLoaded('activePricingRule', fn () => $this->activePricingRule ? [
+                'unit' => $this->activePricingRule->unit,
+                'calculation_method' => $this->activePricingRule->calculation_method,
+            ] : null),
         ];
     }
 }

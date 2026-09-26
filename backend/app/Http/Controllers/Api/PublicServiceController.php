@@ -12,6 +12,7 @@ class PublicServiceController extends Controller
     {
         $services = Service::query()
             ->where('is_active', true)
+            ->with('activePricingRule')
             ->orderBy('sort_order')
             ->get();
 

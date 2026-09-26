@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 class Service extends Model
 {
     protected $fillable = [
@@ -30,5 +31,12 @@ class Service extends Model
 public function pricingRules(): HasMany
 {
     return $this->hasMany(ServicePricingRule::class);
+}
+
+public function activePricingRule(): HasOne
+{
+    return $this->hasOne(ServicePricingRule::class)
+        ->where('is_active', true)
+        ->latestOfMany();
 }
 }
