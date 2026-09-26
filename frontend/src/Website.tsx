@@ -215,6 +215,12 @@ function AppointmentPage() {
       if (projectDraft) {
         const quoteData = new FormData()
         Object.entries(projectDraft.fields).forEach(([name, value]) => { if (value) quoteData.append(name, value) })
+        quoteData.set('first_name', fields.first_name)
+        quoteData.set('last_name', fields.last_name)
+        quoteData.set('phone', fields.phone)
+        if (fields.email) quoteData.set('email', fields.email)
+        if (fields.city) quoteData.set('city', fields.city)
+        if (fields.address) quoteData.set('address', fields.address)
         projectDraft.photos.forEach((photo) => quoteData.append('photos[]', photo))
         const quoteResponse = await fetch(`${apiUrl}/quote-requests`, { method: 'POST', headers: { Accept: 'application/json' }, body: quoteData })
         const quoteResult = await quoteResponse.json().catch(() => null)
