@@ -13,7 +13,7 @@ class PublicAppointmentController extends Controller
         $data = $request->validated();
 
         $appointment = Appointment::create([
-            'quote_request_id' => $data['quote_request_id'] ?? null,
+            'quote_request_id' => $data['quote_request_id'],
             'first_name' => $data['first_name'],
             'last_name' => $data['last_name'],
             'phone' => $data['phone'],
