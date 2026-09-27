@@ -37,6 +37,8 @@ class AppointmentResource extends JsonResource
                 ] : null,
                 'quantity' => $this->quoteRequest->quantity,
                 'unit' => $this->quoteRequest->unit,
+                'estimated_min' => $this->quoteRequest->estimated_min,
+                'estimated_max' => $this->quoteRequest->estimated_max,
                 'dimensions' => $this->quoteRequest->dimensions,
                 'description' => $this->quoteRequest->description,
             ] : null),
