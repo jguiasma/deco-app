@@ -429,7 +429,10 @@ function AdminWorkspace({ token, logout }: { token: string; logout: () => void }
       const response = await fetch(`${apiUrl}/admin/quotes`, { method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
       const data = await response.json().catch(() => null)
       if (!response.ok) throw new Error(data?.message ?? 'Création du devis impossible.')
-      setQuoteRequest(null); setNotice('Devis créé. Vous pouvez maintenant le télécharger en PDF ou le marquer comme envoyé.'); await load()
+      setQuotes((current) => [data.data as AdminQuote, ...current])
+      setQuoteRequest(null); setSelectedAppointment(null); setTab('quotes')
+      setNotice('Devis créé. Vous pouvez maintenant le télécharger en PDF ou l’envoyer au client.')
+      void load()
     } catch (quoteError) { setError(quoteError instanceof Error ? quoteError.message : 'Création du devis impossible.') } finally { setBusy(false) }
   }
 
