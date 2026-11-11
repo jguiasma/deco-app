@@ -13,6 +13,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
 class AdminQuoteController extends Controller
@@ -22,7 +23,7 @@ class AdminQuoteController extends Controller
         $this->ensureAdmin($request);
 
         $quotes = Quote::query()
-            ->with(['items', 'quoteRequest'])
+            ->with(['items', 'quoteRequest.service', 'quoteRequest.appointments'])
             ->when($request->filled('status'), fn ($query) => $query->where('status', $request->input('status')))
             ->when($request->filled('search'), function ($query) use ($request) {
                 $search = trim((string) $request->input('search'));
@@ -114,7 +115,7 @@ class AdminQuoteController extends Controller
             return $quote;
         });
 
-        return QuoteResource::make($quote->load(['items', 'quoteRequest']))
+        return QuoteResource::make($quote->load(['items', 'quoteRequest.service', 'quoteRequest.appointments']))
             ->response()
             ->setStatusCode(201);
     }
@@ -123,18 +124,32 @@ class AdminQuoteController extends Controller
     {
         $this->ensureAdmin($request);
 
-        return QuoteResource::make($quote->load(['items', 'quoteRequest']));
+        return QuoteResource::make($quote->load(['items', 'quoteRequest.service', 'quoteRequest.appointments']));
     }
 
     public function pdf(Request $request, Quote $quote)
     {
         $this->ensureAdmin($request);
 
-        $quote->load(['items', 'quoteRequest']);
+        $quote->load(['items', 'quoteRequest.service', 'quoteRequest.appointments']);
+        $path = "quote-pdfs/{$quote->id}.pdf";
 
-        return Pdf::loadView('pdf.quote', compact('quote'))
-            ->setPaper('a4')
-            ->download("devis-{$quote->quote_number}.pdf");
+        // Le premier clic génère le fichier. Les suivants téléchargent le PDF
+        // déjà préparé, sans refaire le rendu DomPDF.
+        if (! Storage::disk('local')->exists($path)) {
+            Storage::disk('local')->put(
+                $path,
+                Pdf::loadView('pdf.quote', compact('quote'))
+                    ->setPaper('a4')
+                    ->output()
+            );
+        }
+
+        return response()->download(
+            Storage::disk('local')->path($path),
+            "devis-{$quote->quote_number}.pdf",
+            ['Content-Type' => 'application/pdf']
+        );
     }
 
     public function update(UpdateQuoteRequest $request, Quote $quote)
@@ -147,7 +162,7 @@ class AdminQuoteController extends Controller
         $quote->update($data);
 
         if (($data['status'] ?? null) === 'sent' && $previousStatus !== 'sent') {
-            $quote->load(['items', 'quoteRequest']);
+            $quote->load(['items', 'quoteRequest.service', 'quoteRequest.appointments']);
 
             if ($quote->quoteRequest?->email) {
                 Notification::route('mail', $quote->quoteRequest->email)
@@ -155,7 +170,7 @@ class AdminQuoteController extends Controller
             }
         }
 
-        return QuoteResource::make($quote->load(['items', 'quoteRequest']));
+        return QuoteResource::make($quote->load(['items', 'quoteRequest.service', 'quoteRequest.appointments']));
     }
 
     private function ensureAdmin(Request $request): void

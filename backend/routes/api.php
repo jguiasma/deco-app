@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\AdminQuoteRequestImageController;
 use App\Http\Controllers\Api\AdminQuoteController;
 use App\Http\Controllers\Api\AdminProjectController;
 use App\Http\Controllers\Api\AdminDashboardController;
+use App\Http\Controllers\Api\AdminServiceController;
 Route::get('/health', fn () => response()->json([
     'status' => 'ok',
     'message' => 'API Ben Wada Déco fonctionne',
@@ -30,6 +31,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/dashboard', [AdminDashboardController::class, 'index']);
         Route::get('/quote-requests', [AdminQuoteRequestController::class, 'index']);
         Route::patch('/quote-requests/{quoteRequest}', [AdminQuoteRequestController::class, 'update']);
+        Route::delete('/quote-requests/{quoteRequest}', [AdminQuoteRequestController::class, 'destroy']);
         Route::get('/quote-request-images/{quoteRequestImage}', [AdminQuoteRequestImageController::class, 'show'])
             ->name('admin.quote-request-images.show');
         Route::apiResource('quotes', AdminQuoteController::class)
@@ -40,9 +42,12 @@ Route::middleware('auth:sanctum')->group(function () {
             ->only(['index', 'show', 'update']);
         Route::get('/appointments', [AdminAppointmentController::class, 'index']);
         Route::post('/appointments', [AdminAppointmentController::class, 'store']);
+        Route::post('/appointments/{appointment}/quote-request', [AdminAppointmentController::class, 'prepareQuoteRequest']);
         Route::patch('/appointments/{appointment}', [AdminAppointmentController::class, 'update']);
         Route::apiResource('pricing-rules', AdminServicePricingRuleController::class)
             ->only(['index', 'store', 'update', 'destroy']);
+        Route::get('/services', [AdminServiceController::class, 'index']);
+        Route::patch('/services/{service}', [AdminServiceController::class, 'update']);
     });
 });
 Route::get('/services', [PublicServiceController::class, 'index']);

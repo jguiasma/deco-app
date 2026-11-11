@@ -24,6 +24,15 @@ class ProjectResource extends JsonResource
                 'quote_number' => $this->quote->quote_number,
                 'total' => $this->quote->total,
                 'currency' => $this->quote->currency,
+                'quote_request' => $this->quote->quoteRequest ? [
+                    'id' => $this->quote->quoteRequest->id,
+                    'first_name' => $this->quote->quoteRequest->first_name,
+                    'last_name' => $this->quote->quoteRequest->last_name,
+                    'phone' => $this->quote->quoteRequest->phone,
+                    'service' => $this->quote->quoteRequest->service ? [
+                        'title' => $this->quote->quoteRequest->service->title,
+                    ] : null,
+                ] : null,
             ]),
             'created_at' => $this->created_at?->toISOString(),
         ];

@@ -4,8 +4,8 @@
     <meta charset="utf-8">
     <style>
         body { font-family: DejaVu Sans, sans-serif; color: #292524; font-size: 12px; }
-        .header { border-bottom: 2px solid #b58b3a; margin-bottom: 28px; padding-bottom: 14px; }
-        .brand { font-size: 25px; font-weight: bold; }
+        .header { border-bottom: 2px solid #292524; margin-bottom: 28px; padding-bottom: 14px; }
+        .logo { display: block; width: 150px; height: auto; }
         .muted { color: #6b7280; }
         .details { width: 100%; margin: 20px 0; }
         .details td { vertical-align: top; width: 50%; }
@@ -22,7 +22,11 @@
 </head>
 <body>
     <div class="header">
-        <div class="brand">Ben Wada Déco</div>
+        @if(file_exists(public_path('images/brand/ben-wada-deco-logo.png')))
+            <img class="logo" src="{{ public_path('images/brand/ben-wada-deco-logo.png') }}" alt="Ben Wada Déco">
+        @else
+            <strong>Ben Wada Déco</strong>
+        @endif
         <div class="muted">Décoration intérieure &amp; fabrication sur mesure</div>
     </div>
 

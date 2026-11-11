@@ -20,7 +20,7 @@ class AdminProjectController extends Controller
         $this->ensureAdmin($request);
 
         $projects = Project::query()
-            ->with('quote')
+            ->with('quote.quoteRequest.service')
             ->when($request->filled('status'), fn ($query) => $query->where('status', $request->input('status')))
             ->latest()
             ->paginate(20);
@@ -54,7 +54,7 @@ class AdminProjectController extends Controller
             'admin_notes' => $data['admin_notes'] ?? null,
         ]);
 
-        return ProjectResource::make($project->load('quote'))
+        return ProjectResource::make($project->load('quote.quoteRequest.service'))
             ->response()
             ->setStatusCode(201);
     }
@@ -63,7 +63,7 @@ class AdminProjectController extends Controller
     {
         $this->ensureAdmin($request);
 
-        return ProjectResource::make($project->load('quote'));
+        return ProjectResource::make($project->load('quote.quoteRequest.service'));
     }
 
     public function update(UpdateProjectRequest $request, Project $project)

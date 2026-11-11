@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreQuoteRequestRequest;
 use App\Models\QuoteRequest;
 use App\Models\ServicePricingRule;
+use App\Models\Service;
 use Illuminate\Validation\ValidationException;
 
 class PublicQuoteRequestController extends Controller
@@ -13,11 +14,11 @@ class PublicQuoteRequestController extends Controller
     public function store(StoreQuoteRequestRequest $request)
     {
         $data = $request->validated();
-        $pricingRule = $this->findPricingRule($data);
-        [$estimatedMin, $estimatedMax] = $this->calculateEstimate(
-            (float) $data['quantity'],
-            $pricingRule,
-        );
+        $service = Service::findOrFail($data['service_id']);
+        $pricingRule = $service->pricing_mode === 'on_quote' ? null : $this->findPricingRule($data);
+        [$estimatedMin, $estimatedMax] = $pricingRule
+            ? $this->calculateEstimate((float) $data['quantity'], $pricingRule)
+            : [null, null];
 
         $quoteRequest = QuoteRequest::create([
             'client_id' => null,
@@ -31,9 +32,10 @@ class PublicQuoteRequestController extends Controller
 
             'service_id' => $data['service_id'],
             'service_type' => $data['service_type'] ?? null,
-            'pricing_rule_id' => $pricingRule->id,
+            // Une prestation "sur devis" peut ne pas avoir de règle de prix automatique.
+            'pricing_rule_id' => $pricingRule?->id,
             'quantity' => $data['quantity'],
-            'unit' => $pricingRule->unit,
+            'unit' => $pricingRule?->unit,
             'estimated_min' => $estimatedMin,
             'estimated_max' => $estimatedMax,
             'description' => $data['description'],
@@ -68,19 +70,13 @@ class PublicQuoteRequestController extends Controller
         ], 201);
     }
 
-    private function findPricingRule(array $data): ServicePricingRule
+    private function findPricingRule(array $data): ?ServicePricingRule
     {
         $query = ServicePricingRule::query()
             ->where('service_id', $data['service_id'])
             ->where('is_active', true);
 
         $pricingRule = $query->latest()->first();
-
-        if (! $pricingRule) {
-            throw ValidationException::withMessages([
-                'service_id' => ['Aucune règle de prix active n’est configurée pour ce service.'],
-            ]);
-        }
 
         return $pricingRule;
     }

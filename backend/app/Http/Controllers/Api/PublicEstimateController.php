@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CalculateEstimateRequest;
 use App\Models\ServicePricingRule;
+use App\Models\Service;
 use Illuminate\Validation\ValidationException;
 
 class PublicEstimateController extends Controller
@@ -12,6 +13,17 @@ class PublicEstimateController extends Controller
     public function store(CalculateEstimateRequest $request)
     {
         $data = $request->validated();
+        $service = Service::findOrFail($data['service_id']);
+
+        if ($service->pricing_mode === 'on_quote') {
+            return response()->json([
+                'data' => [
+                    'service' => ['id' => $service->id, 'title' => $service->title],
+                    'on_quote' => true,
+                    'note' => 'Cette prestation est réalisée sur devis. Prenez rendez-vous afin que nous puissions étudier votre projet et préparer le prix final.',
+                ],
+            ]);
+        }
 
         $pricingRuleQuery = ServicePricingRule::query()
             ->with('service')
@@ -21,8 +33,12 @@ class PublicEstimateController extends Controller
         $pricingRule = $pricingRuleQuery->latest()->first();
 
         if (! $pricingRule) {
-            throw ValidationException::withMessages([
-                'service_id' => ['Aucune règle de prix active n’est configurée pour ce service.'],
+            return response()->json([
+                'data' => [
+                    'service' => ['id' => $service->id, 'title' => $service->title],
+                    'on_quote' => true,
+                    'note' => 'Cette prestation est réalisée sur devis. Prenez rendez-vous afin que nous puissions étudier votre projet et préparer le prix final.',
+                ],
             ]);
         }
 

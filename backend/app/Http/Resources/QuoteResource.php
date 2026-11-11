@@ -33,6 +33,28 @@ class QuoteResource extends JsonResource
                 'id' => $this->quoteRequest->id,
                 'first_name' => $this->quoteRequest->first_name,
                 'last_name' => $this->quoteRequest->last_name,
+                'phone' => $this->quoteRequest->phone,
+                'email' => $this->quoteRequest->email,
+                'city' => $this->quoteRequest->city,
+                'address' => $this->quoteRequest->address,
+                'description' => $this->quoteRequest->description,
+                'service' => $this->quoteRequest->service ? [
+                    'title' => $this->quoteRequest->service->title,
+                ] : null,
+                'appointments' => $this->when(
+                    $this->quoteRequest->relationLoaded('appointments'),
+                    fn () => $this->quoteRequest->appointments
+                        ->sortByDesc('scheduled_at')
+                        ->values()
+                        ->map(fn ($appointment) => [
+                            'id' => $appointment->id,
+                            'appointment_mode' => $appointment->appointment_mode,
+                            'remote_platform' => $appointment->remote_platform,
+                            'scheduled_at' => $appointment->scheduled_at?->toISOString(),
+                            'status' => $appointment->status,
+                            'notes' => $appointment->notes,
+                        ])
+                ),
             ] : null),
             'items' => $this->whenLoaded('items', fn () => $this->items->map(fn ($item) => [
                 'id' => $item->id,
